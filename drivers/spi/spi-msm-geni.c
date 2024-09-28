@@ -164,6 +164,9 @@ struct spi_geni_master {
 	int num_rx_eot;
 	int num_xfers;
 	atomic_t is_irq_enable;
+#ifdef CONFIG_IS_XFER_IN_PROGRESS
+	bool is_xfer_in_progress;
+#endif
 	void *ipc;
 	bool gsi_mode; /* GSI Mode */
 	bool shared_ee; /* Dual EE use case */
@@ -1006,13 +1009,14 @@ static int spi_geni_prepare_message(struct spi_master *spi,
 
 	if (mas->shared_ee) {
 		if (mas->setup) {
+#ifdef CONFIG_IS_XFER_IN_PROGRESS
 			/* Client to respect system suspend */
 			if (!pm_runtime_enabled(mas->dev)) {
 				GENI_SE_ERR(mas->ipc, false, NULL,
 					"%s: System suspended\n", __func__);
 				return -EACCES;
 			}
-
+#endif
 			ret = pm_runtime_get_sync(mas->dev);
 			if (ret < 0) {
 				dev_err(mas->dev,
@@ -1020,8 +1024,10 @@ static int spi_geni_prepare_message(struct spi_master *spi,
 							__func__, ret);
 				WARN_ON_ONCE(1);
 				pm_runtime_put_noidle(mas->dev);
+#ifdef CONFIG_IS_XFER_IN_PROGRESS
 				/* Set device in suspended since resume failed */
 				pm_runtime_set_suspended(mas->dev);
+#endif
 				goto exit_prepare_message;
 			}
 			ret = 0;
@@ -1335,6 +1341,10 @@ static int spi_geni_prepare_transfer_hardware(struct spi_master *spi)
 	/* Adjust the IB based on the max speed of the slave in kHz.*/
 	rsc->ib = (max_speed * DEFAULT_BUS_WIDTH) / 1000;
 
+#ifdef CONFIG_IS_XFER_IN_PROGRESS
+	mas->is_xfer_in_progress = true;
+#endif
+
 	/*
 	 * Not required for LE as below intializations are specific
 	 * to usecases. For LE, client takes care of get_sync.
@@ -1342,12 +1352,15 @@ static int spi_geni_prepare_transfer_hardware(struct spi_master *spi)
 	if (mas->is_le_vm)
 		return 0;
 
+#ifdef CONFIG_IS_XFER_IN_PROGRESS
 	/* Client to respect system suspend */
 	if (!pm_runtime_enabled(mas->dev)) {
 		GENI_SE_ERR(mas->ipc, false, NULL,
 			"%s: System suspended\n", __func__);
+		mas->is_xfer_in_progress = false;
 		return -EACCES;
 	}
+#endif
 
 	if (mas->gsi_mode && !mas->shared_ee) {
 		struct se_geni_rsc *rsc;
@@ -1366,6 +1379,12 @@ static int spi_geni_prepare_transfer_hardware(struct spi_master *spi)
 			"%s: Error %d pinctrl_select_state\n", __func__, ret);
 	}
 
+	if (mas->dev->power.disable_depth > 0) {
+		dev_err(mas->dev, "%s:disable_depth not zero %d\n",
+					__func__, mas->dev->power.disable_depth);
+		pm_runtime_enable(mas->dev);
+	}
+
 	if (!mas->setup || !mas->shared_ee) {
 		ret = pm_runtime_get_sync(mas->dev);
 		if (ret < 0) {
@@ -1374,8 +1393,11 @@ static int spi_geni_prepare_transfer_hardware(struct spi_master *spi)
 							__func__, ret);
 			WARN_ON_ONCE(1);
 			pm_runtime_put_noidle(mas->dev);
+#ifdef CONFIG_IS_XFER_IN_PROGRESS
 			/* Set device in suspended since resume failed */
 			pm_runtime_set_suspended(mas->dev);
+			mas->is_xfer_in_progress = false;
+#endif
 			return ret;
 		}
 
@@ -1384,6 +1406,9 @@ static int spi_geni_prepare_transfer_hardware(struct spi_master *spi)
 			if (ret) {
 				GENI_SE_ERR(mas->ipc, true, NULL,
 				"%s mas_setup failed: %d\n", __func__, ret);
+#ifdef CONFIG_IS_XFER_IN_PROGRESS
+				mas->is_xfer_in_progress = false;
+#endif
 				return ret;
 			}
 		}
@@ -1405,8 +1430,12 @@ static int spi_geni_unprepare_transfer_hardware(struct spi_master *spi)
 	struct spi_geni_master *mas = spi_master_get_devdata(spi);
 	int count = 0;
 
-	if (mas->shared_ee || mas->is_le_vm)
+	if (mas->shared_ee || mas->is_le_vm) {
+#ifdef CONFIG_IS_XFER_IN_PROGRESS
+		mas->is_xfer_in_progress = false;
+#endif	
 		return 0;
+	}
 
 	if (mas->gsi_mode) {
 		struct se_geni_rsc *rsc;
@@ -1435,6 +1464,9 @@ static int spi_geni_unprepare_transfer_hardware(struct spi_master *spi)
 		pm_runtime_mark_last_busy(mas->dev);
 		pm_runtime_put_autosuspend(mas->dev);
 	}
+#ifdef CONFIG_IS_XFER_IN_PROGRESS
+	mas->is_xfer_in_progress = false;
+#endif
 	return 0;
 }
 
@@ -1661,6 +1693,7 @@ static int spi_geni_transfer_one(struct spi_master *spi,
 	GENI_SE_DBG(mas->ipc, false, mas->dev,
 			"current xfer_timeout:%lu ms.\n", xfer_timeout);
 
+#ifdef CONFIG_IS_XFER_IN_PROGRESS
 	/* Double check PM status, client might have not taken wakelock and
 	 * continue to queue more transfers. Post auto-suspend, system suspend
 	 * can keep driver to forced suspend, hence it's client's responsibility
@@ -1671,6 +1704,7 @@ static int spi_geni_transfer_one(struct spi_master *spi,
 			"%s: device is PM suspended\n", __func__);
 		return -EACCES;
 	}
+#endif
 
 	if (mas->cur_xfer_mode != GSI_DMA) {
 		reinit_completion(&mas->xfer_done);
@@ -2206,6 +2240,9 @@ static int spi_geni_probe(struct platform_device *pdev)
 			"M - DRIVER GENI_SPI_%d Ready", spi->bus_num);
 	place_marker(boot_marker);
 	dev_info(&pdev->dev, "%s: completed\n", __func__);
+#ifdef CONFIG_IS_XFER_IN_PROGRESS
+	geni_mas->is_xfer_in_progress = false;
+#endif
 	return ret;
 spi_geni_probe_unmap:
 	devm_iounmap(&pdev->dev, geni_mas->base);
@@ -2314,11 +2351,23 @@ static int spi_geni_suspend(struct device *dev)
 	int ret = 0;
 	struct spi_master *spi = get_spi_master(dev);
 	struct spi_geni_master *geni_mas = spi_master_get_devdata(spi);
-
+#ifdef CONFIG_IS_XFER_IN_PROGRESS
+	if (geni_mas->is_xfer_in_progress) {
+		ret = -EBUSY;
+		if (!pm_runtime_status_suspended(dev)) {
+			GENI_SE_ERR(geni_mas->ipc, true, dev,
+				":%s: runtime PM is active\n", __func__);
+			return ret;
+		}
+		GENI_SE_ERR(geni_mas->ipc, true, dev,
+			"%s System suspend not allowed while xfer in progress\n",
+				__func__);
+#else
 	if (!pm_runtime_status_suspended(dev)) {
 		GENI_SE_ERR(geni_mas->ipc, true, dev,
 			":%s: runtime PM is active\n", __func__);
 		ret = -EBUSY;
+#endif
 		return ret;
 	}
 

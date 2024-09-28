@@ -710,8 +710,7 @@ static int erofs_statfs(struct dentry *dentry, struct kstatfs *buf)
 
 	buf->f_namelen = EROFS_NAME_LEN;
 
-	buf->f_fsid.val[0] = (u32)id;
-	buf->f_fsid.val[1] = (u32)(id >> 32);
+	buf->f_fsid    = u64_to_fsid(id);
 	return 0;
 }
 
@@ -757,3 +756,5 @@ module_exit(erofs_module_exit);
 MODULE_DESCRIPTION("Enhanced ROM File System");
 MODULE_AUTHOR("Gao Xiang, Chao Yu, Miao Xie, CONSUMER BG, HUAWEI Inc.");
 MODULE_LICENSE("GPL");
+MODULE_IMPORT_NS(ANDROID_GKI_VFS_EXPORT_ONLY);
+

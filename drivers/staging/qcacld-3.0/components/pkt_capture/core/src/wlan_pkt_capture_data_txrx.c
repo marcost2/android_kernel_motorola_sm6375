@@ -1702,7 +1702,6 @@ void pkt_capture_offload_deliver_indication_handler(
 
 	ptr_pktcapture_hdr =
 	(struct pkt_capture_tx_hdr_elem_t *)qdf_nbuf_data(netbuf);
-
 	qdf_mem_copy(ptr_pktcapture_hdr, &pktcapture_hdr, txcap_hdr_size);
 
 	pkt_capture_datapkt_process(

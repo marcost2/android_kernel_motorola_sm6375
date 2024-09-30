@@ -444,7 +444,6 @@ static int dp_power_request_gpios(struct dp_power_private *power)
 			}
 		}
 	}
-
 	return 0;
 error:
 	for (i = 0; i < ARRAY_SIZE(gpio_names); i++) {

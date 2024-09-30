@@ -13,6 +13,24 @@ ifeq ($(KERNEL_BUILD), 1)
 	AUDIO_ROOT := $(AUDIO_BLD_DIR)/techpack/audio
 endif
 
+EXTRA_CFLAGS += -DCONFIG_SND_SOC_AWINIC_AW882XX
+
+ifeq ($(CONFIG_AW882XX_PARAMS_FROM_BIN), y)
+CDEFINES +=     -DCONFIG_AW882XX_PARAMS_STORED_IN_BIN
+endif
+
+ifeq ($(CONFIG_AW882XX_MAPSIZE_16K), y)
+CDEFINES +=     -DCONFIG_AW882XX_MAPSIZE_16K
+endif
+
+ifdef CONFIG_SND_SOC_AW87XXX
+CDEFINES +=     -DCONFIG_SND_SOC_AW87XXX
+endif
+
+ifdef CONFIG_SND_SOC_FS1815
+CDEFINES +=     -DCONFIG_SND_SOC_FS1815
+endif
+
 ifeq ($(CONFIG_SND_SOC_AUTO), y)
 	ifdef CONFIG_SND_SOC_SA8155
 		include $(AUDIO_ROOT)/config/sa8155auto.conf
@@ -289,3 +307,6 @@ q6_pdr_dlkm-y := $(QDSP6_PDR_OBJS)
 
 obj-$(CONFIG_MSM_QDSP6_NOTIFIER) += q6_notifier_dlkm.o
 q6_notifier_dlkm-y := $(QDSP6_NOTIFIER_OBJS)
+
+# inject some build related information
+DEFINES += -DBUILD_TIMESTAMP=\"$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')\"

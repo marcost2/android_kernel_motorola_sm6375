@@ -26,6 +26,9 @@
 #include "core.h"
 #include "pinctrl-utils.h"
 
+#define LPI_AUTO_SUSPEND_DELAY           100 /* delay in msec */
+#define LPI_AUTO_SUSPEND_DELAY_ERROR     1   /* delay in msec */
+
 #define LPI_ADDRESS_SIZE                 0x20000
 #define LPI_SLEW_ADDRESS_SIZE            0x1000
 

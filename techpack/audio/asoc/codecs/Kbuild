@@ -274,6 +274,13 @@ ifeq ($(KERNEL_BUILD), 1)
 	obj-y	+= bolero/
 	obj-y	+= wsa883x/
 	obj-y	+= rouleur/
+	obj-y	+= aw882xx/
+	obj-y	+= aw882xxacf/
+	obj-y	+= aw87xxx/
+	obj-y	+= fs1815/
+ifeq ($(CONFIG_SND_SOC_AW8838), y)
+	obj-y	+= aw8838/
+endif
 endif
 # Module information used by KBuild framework
 obj-$(CONFIG_WCD9XXX_CODEC_CORE) += wcd_core_dlkm.o
@@ -314,3 +321,6 @@ endif
 
 obj-$(CONFIG_SND_SWR_HAPTICS) += swr_haptics_dlkm.o
 swr_haptics_dlkm-y := $(SWR_HAP_OBJS)
+
+# inject some build related information
+DEFINES += -DBUILD_TIMESTAMP=\"$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')\"

@@ -711,8 +711,12 @@ void wcd_mbhc_report_plug(struct wcd_mbhc *mbhc, int insertion,
 					&mbhc->zl, &mbhc->zr);
 			WCD_MBHC_REG_UPDATE_BITS(WCD_MBHC_FSM_EN,
 						 fsm_en);
-			if ((mbhc->zl > mbhc->mbhc_cfg->linein_th) &&
-				(mbhc->zr > mbhc->mbhc_cfg->linein_th) &&
+			pr_info("%s,compute impedance,zl = %d,zr = %d\n",
+                                    __func__, mbhc->zl, mbhc->zr);
+			if ((((mbhc->zl > mbhc->mbhc_cfg->linein_th) &&
+				(mbhc->zr > mbhc->mbhc_cfg->linein_th)) ||
+				(mbhc->zl == 0) ||
+				(mbhc->zr == 0)) &&
 				(jack_type == SND_JACK_HEADPHONE)) {
 				jack_type = SND_JACK_LINEOUT;
 				mbhc->force_linein = true;
@@ -1653,6 +1657,7 @@ int wcd_mbhc_start(struct wcd_mbhc *mbhc, struct wcd_mbhc_config *mbhc_cfg)
 	struct snd_soc_component *component;
 	struct snd_soc_card *card;
 	const char *usb_c_dt = "qcom,msm-mbhc-usbc-audio-supported";
+	const char *linein_th = "qcom,msm-hs-linein-threshold";
 
 	if (!mbhc || !mbhc_cfg)
 		return -EINVAL;
@@ -1678,6 +1683,12 @@ int wcd_mbhc_start(struct wcd_mbhc *mbhc, struct wcd_mbhc_config *mbhc_cfg)
 		dev_dbg(card->dev,
 			"%s: skipping USB c analog configuration\n", __func__);
 	}
+
+	if (of_find_property(card->dev->of_node, linein_th, NULL)) {
+		rc = of_property_read_u32(card->dev->of_node, linein_th,
+				&mbhc->mbhc_cfg->linein_th);
+	}
+	pr_info("%s, LINEIN threshold = %d\n", __func__, mbhc->mbhc_cfg->linein_th);
 
 	/* Parse fsa switch handle */
 	if (mbhc_cfg->enable_usbc_analog) {

@@ -2552,7 +2552,6 @@ static QDF_STATUS util_scan_parse_mbssid(struct wlan_objmgr_pdev *pdev,
 						(nontx_profile +
 						 PAYLOAD_START_POS),
 						subie_len, new_ie);
-
 			if (!new_ie_len) {
 				if (mbssid_info.split_prof_continue) {
 					qdf_mem_free(split_prof_start);

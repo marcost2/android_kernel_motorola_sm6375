@@ -1,0 +1,4 @@
+
+config LDO_VIBRATOR_MMI
+	tristate "ldo vibrator driver"
+	default n

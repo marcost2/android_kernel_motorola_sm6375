@@ -1,0 +1,11 @@
+config INPUT_RBS_FOD_MMI
+	tristate "RBS FOD fingerprint sensor MMI"
+	default n
+	help
+	 Say Y here if you wish to include support for MMI RBS finger print sensor.
+	 If unsure, say N.
+
+config EGIS_PANEL_NOTIFICATIONS
+	bool "EGIS panel notifications"
+	depends on INPUT_RBS_FOD_MMI
+	default n

@@ -1,0 +1,11 @@
+config SM5350_BL
+	tristate "SM5350 backlight driver"
+	default n
+	help
+	  Say Y here if you have SM5350_BL backlight in
+	  your system.
+
+	  If unsure, say N.
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called sm5350_bl.

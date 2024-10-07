@@ -48,6 +48,8 @@ if TYPEC
 
 source "drivers/usb/typec/tcpm/Kconfig"
 
+source "drivers/usb/typec/mmi_tcpc/Kconfig"
+
 source "drivers/usb/typec/ucsi/Kconfig"
 
 config TYPEC_TPS6598X
@@ -64,5 +66,7 @@ config TYPEC_TPS6598X
 source "drivers/usb/typec/mux/Kconfig"
 
 source "drivers/usb/typec/altmodes/Kconfig"
+
+source "drivers/usb/typec/adapter_class/Kconfig"
 
 endif # TYPEC

@@ -1,0 +1,11 @@
+config RADIO_ELNA
+	tristate "ELNA FM Radio"
+	default n
+	help
+	  Say Y here if you have ELNA FM Radio in
+	  your system.
+
+	  If unsure, say N.
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called fm_ctrl.

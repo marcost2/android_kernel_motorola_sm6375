@@ -1,0 +1,5 @@
+config LEDS_AW2033
+	tristate "Awinic AW2033 LED support"
+	help
+	  Support for Awinic AW2033 LED controller
+	  If unsure, say N

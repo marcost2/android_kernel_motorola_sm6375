@@ -1,0 +1,3 @@
+source "st54spi_gpio/Kconfig"
+
+source "st54x/Kconfig"

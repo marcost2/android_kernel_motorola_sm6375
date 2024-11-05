@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2012-2020 The Linux Foundation. All rights reserved.
- * Copyright (c) 2021 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2021-2023 Qualcomm Innovation Center, Inc. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -844,9 +844,6 @@ QDF_STATUS wlansap_start_bss(struct sap_context *sap_ctx,
 		  pmac->sap.SapDfsInfo.sap_ch_switch_mode,
 		  pmac->sap.SapDfsInfo.reduced_beacon_interval);
 
-	//BEGIN MOT a19110 IKSWO-8490 Comment out initialisation of
-	//acl list. We use driver ioctl to set it
-#if 0
 	/* Copy MAC filtering settings to sap context */
 	sap_ctx->eSapMacAddrAclMode = config->SapMacaddr_acl;
 	qdf_mem_copy(sap_ctx->acceptMacList, config->accept_mac,
@@ -857,10 +854,7 @@ QDF_STATUS wlansap_start_bss(struct sap_context *sap_ctx,
 		     sizeof(config->deny_mac));
 	sap_ctx->nDenyMac = config->num_deny_mac;
 	sap_sort_mac_list(sap_ctx->denyMacList, sap_ctx->nDenyMac);
-#endif
-        //END IKSWO-8490
-        sap_ctx->beacon_tx_rate = config->beacon_tx_rate;
-
+	sap_ctx->beacon_tx_rate = config->beacon_tx_rate;
 
 	/* Fill in the event structure for FSM */
 	sap_event.event = eSAP_HDD_START_INFRA_BSS;
@@ -2337,11 +2331,11 @@ void wlansap_extend_to_acs_range(mac_handle_t mac_handle,
 	}
 
 	if (*end_ch_freq <= wlan_reg_ch_to_freq(CHAN_ENUM_2484)) {
-		*bandEndChannel = CHAN_ENUM_2472;
+		*bandEndChannel = CHAN_ENUM_2484;
 		tmp_end_ch_freq = (*end_ch_freq + ACS_2G_EXTEND) <=
-					wlan_reg_ch_to_freq(CHAN_ENUM_2472) ?
+					wlan_reg_ch_to_freq(CHAN_ENUM_2484) ?
 					(*end_ch_freq + ACS_2G_EXTEND) :
-					wlan_reg_ch_to_freq(CHAN_ENUM_2472);
+					wlan_reg_ch_to_freq(CHAN_ENUM_2484);
 	} else if (*end_ch_freq <= wlan_reg_ch_to_freq(CHAN_ENUM_5885)) {
 		*bandEndChannel = CHAN_ENUM_5885;
 		tmp_end_ch_freq = (*end_ch_freq + ACS_5G_EXTEND) <=
@@ -3236,7 +3230,8 @@ qdf_freq_t wlansap_get_chan_band_restrict(struct sap_context *sap_ctx,
 		sap_debug("Restore chan freq: %d, width: %d",
 			  restart_freq, restart_ch_width);
 		*csa_reason = CSA_REASON_BAND_RESTRICTED;
-	} else if (wlan_reg_is_disable_for_freq(mac->pdev,
+	} else if (wlan_reg_is_disable_in_secondary_list_for_freq(
+						mac->pdev,
 						sap_ctx->chan_freq)) {
 		sap_debug("channel is disabled");
 		*csa_reason = CSA_REASON_CHAN_DISABLED;

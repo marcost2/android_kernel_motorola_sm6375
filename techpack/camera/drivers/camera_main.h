@@ -105,7 +105,6 @@ static struct platform_driver *const cam_component_drivers[] = {
 	&cci_driver,
 	&csiphy_driver,
 	&cam_actuator_platform_driver,
-
 	&cam_sensor_platform_driver,
 	&cam_eeprom_platform_driver,
 	&cam_ois_platform_driver,

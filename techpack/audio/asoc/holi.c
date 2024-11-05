@@ -586,6 +586,7 @@ static char const *bt_sample_rate_tx_text[] = {"KHZ_8", "KHZ_16",
 static const char *const afe_loopback_tx_ch_text[] = {"One", "Two"};
 static const char *const earpiece_dsense_text[] = {"On", "Off"};
 
+
 static SOC_ENUM_SINGLE_EXT_DECL(usb_rx_sample_rate, usb_sample_rate_text);
 static SOC_ENUM_SINGLE_EXT_DECL(usb_tx_sample_rate, usb_sample_rate_text);
 static SOC_ENUM_SINGLE_EXT_DECL(usb_rx_format, bit_format_text);
@@ -773,17 +774,15 @@ static void msm_audio_add_qos_request(void)
 	int i;
 	int cpu = 0;
 
-	msm_audio_req = kzalloc(sizeof(struct dev_pm_qos_request) * NR_CPUS,
-				 GFP_KERNEL);
-	if (!msm_audio_req) {
-		pr_err("%s failed to alloc mem for qos req.\n", __func__);
+	msm_audio_req = kcalloc(num_possible_cpus(),
+		sizeof(struct dev_pm_qos_request), GFP_KERNEL);
+	if (!msm_audio_req)
 		return;
-	}
 
 	for (i = 0; i < ARRAY_SIZE(audio_core_list); i++) {
-		if (audio_core_list[i] >= NR_CPUS)
+		if (audio_core_list[i] >= num_possible_cpus())
 			pr_err("%s incorrect cpu id: %d specified.\n",
-				 __func__, audio_core_list[i]);
+				__func__, audio_core_list[i]);
 		else
 			cpumask_set_cpu(audio_core_list[i], &audio_cpu_map);
 	}
@@ -6309,7 +6308,6 @@ static int aw_update_dai_link_name(struct snd_soc_dai_link *dailink, int len1)
 
 #endif
 
-
 static struct snd_soc_card *populate_snd_card_dailinks(struct device *dev)
 {
 	struct snd_soc_card *card = NULL;
@@ -6416,7 +6414,6 @@ static struct snd_soc_card *populate_snd_card_dailinks(struct device *dev)
 					ARRAY_SIZE(msm_wcn_btfm_be_dai_links);
 			}
 		}
-
 		if (mi2s_audio_intf) {
 
 #ifdef CONFIG_AW882XX_STEREO_SMARTPA_PRI

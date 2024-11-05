@@ -2,7 +2,6 @@
 /*
  * Copyright (C) 2017-2018 HUAWEI, Inc.
  *             https://www.huawei.com/
- * Created by Gao Xiang <gaoxiang25@huawei.com>
  */
 #include <linux/module.h>
 #include <linux/buffer_head.h>
@@ -372,10 +371,11 @@ static const struct fs_parameter_spec erofs_fs_param_specs[] = {
 	fsparam_enum("cache_strategy",	Opt_cache_strategy),
 	{}
 };
+
 const struct fs_parameter_description erofs_fs_parameters = {
-	.name = "erofs",
-	.specs = erofs_fs_param_specs,
-	.enums = erofs_param_cache_strategy,
+	.name		= "erofs",
+	.specs		= erofs_fs_param_specs,
+	.enums		= erofs_param_cache_strategy,
 };
 
 static int erofs_fc_parse_param(struct fs_context *fc,
@@ -756,5 +756,3 @@ module_exit(erofs_module_exit);
 MODULE_DESCRIPTION("Enhanced ROM File System");
 MODULE_AUTHOR("Gao Xiang, Chao Yu, Miao Xie, CONSUMER BG, HUAWEI Inc.");
 MODULE_LICENSE("GPL");
-MODULE_IMPORT_NS(ANDROID_GKI_VFS_EXPORT_ONLY);
-

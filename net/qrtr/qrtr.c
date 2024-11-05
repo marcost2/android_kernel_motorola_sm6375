@@ -942,7 +942,8 @@ int qrtr_endpoint_post(struct qrtr_endpoint *ep, const void *data, size_t len)
 		}
 
 		if (node->nid == 5) {
-			if (svc_id > 0){
+			svc_id = qrtr_get_service_id(cb->src_node, cb->src_port);
+			if (svc_id > 0) {
 				for (i = 0; i < node->no_wake_svc.size; i++) {
 					if (svc_id == node->no_wake_svc.arr[i]) {
 						wake = false;
@@ -1199,7 +1200,7 @@ int qrtr_endpoint_register(struct qrtr_endpoint *ep, unsigned int net_id,
 	if (rt)
 		sched_setscheduler(node->task, SCHED_FIFO, &param);
 
-	if(svc_arr && svc_arr->size) {
+	if (svc_arr && svc_arr->size) {
 		node->no_wake_svc.arr = kmalloc_array(svc_arr->size, sizeof(u32), GFP_KERNEL);
 		memcpy((void *)node->no_wake_svc.arr, (void *)svc_arr->arr,
 				svc_arr->size * sizeof(u32));

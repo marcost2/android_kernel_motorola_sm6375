@@ -206,7 +206,7 @@ static int sde_backlight_setup(struct sde_connector *c_conn,
 	struct backlight_properties props;
 	struct dsi_display *display;
 	struct dp_panel *dp_panel;
-	struct dsi_backlight_config *dsi_bl_config;
+	struct dsi_backlight_config *dsi_bl_config = NULL;
 	struct sde_kms *sde_kms;
 	static int display_count;
 	char bl_node_name[BL_NODE_NAME_SIZE];

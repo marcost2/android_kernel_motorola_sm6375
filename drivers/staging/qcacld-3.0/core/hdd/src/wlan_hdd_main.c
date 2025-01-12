@@ -17827,11 +17827,13 @@ int hdd_driver_load(void)
 
 	hdd_set_conparam(con_mode);
 
+#ifdef FEATURE_WLAN_RESIDENT_DRIVER
 	errno = wlan_hdd_state_ctrl_param_create();
 	if (errno) {
 		hdd_err("Failed to create ctrl param; errno:%d", errno);
 		goto wakelock_destroy;
 	}
+#endif
 
 	errno = pld_init();
 	if (errno) {
@@ -17877,8 +17879,10 @@ pld_deinit:
 		;
 param_destroy:
 	wlan_hdd_state_ctrl_param_destroy();
+#ifdef FEATURE_WLAN_RESIDENT_DRIVER
 wakelock_destroy:
 	qdf_wake_lock_destroy(&wlan_wake_lock);
+#endif
 comp_deinit:
 	hdd_component_deinit();
 hdd_deinit:

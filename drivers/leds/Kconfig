@@ -905,5 +905,6 @@ config LEDS_INDICATOR_PWM
 
 comment "LED Triggers"
 source "drivers/leds/trigger/Kconfig"
+source "drivers/leds/aw2033/Kconfig"
 
 endif # NEW_LEDS

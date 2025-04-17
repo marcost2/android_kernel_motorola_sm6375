@@ -18,5 +18,6 @@ obj-$(CONFIG_NFC_NXP_NCI)	+= nxp-nci/
 obj-$(CONFIG_NFC_S3FWRN5)	+= s3fwrn5/
 obj-$(CONFIG_NFC_ST95HF)	+= st95hf/
 obj-$(CONFIG_SEC_NFC)           += samsung/
+obj-$(CONFIG_NFC_SN1XX)         += sn1xx/
 obj-$(CONFIG_NFC_SN2XX)         += sn2xx/
 obj-y				+= qti/
